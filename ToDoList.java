@@ -1,10 +1,12 @@
 
+import java.util.HashMap;
 import java.util.ArrayList; //importing arraylist to store tasks
 import java.util.Scanner; //importing scanner to take user input
 
 public class ToDoList {
-    //creating arraylist to store tasks
-    private static ArrayList<String> tasks= new ArrayList<>();
+    //store task with category using hashmap (category -> list of tasks)
+    public static HashMap<String, ArrayList<String>> tasks = new HashMap<>();
+   
     //scanner object to read user input
     private static Scanner scanner = new Scanner (System.in);
 
@@ -58,16 +60,33 @@ public class ToDoList {
     public static void addTask(){
         System.out.println("enter a task you want to add");
         String task =  scanner.nextLine(); //reading user input
-        tasks.add(task); //add task to the arraylist
-        System.out.println("task added successfully");
-    }
+        //ask user for a task category
+        System.out.println("enter a task category eg work, personal or urgent...");
+        String category = scanner.nextLine().toLowerCase(); //convert to lower case for consistency
+
+        //if category does not exist, create a new list of it
+        tasks.putIfAbsent(category, new ArrayList<>());
+        tasks.get(category).add(task); //add task to category
+
+        System.out.println("task added successfully '" + category + "' category" );
+    }   
 
     //method to remove a task
 
     public static void removeTask(){
         viewTask(); //displaying the current task
+
         if(tasks.isEmpty()){
             System.out.println("no tasks to remove");
+            return;
+        }
+
+        System.out.println("enter category of the task");
+        String category = scanner.nextLine().toLowerCase();
+
+        //check if category exist
+        if(!tasks.containsKey(category) || tasks.get(category).isEmpty() ){
+            System.out.println("no tasks found under this category");
             return;
         }
         
@@ -76,9 +95,14 @@ public class ToDoList {
         scanner.nextLine(); //reading user input
 
         //checking if the entered index is within the valid range
-        if(index >= 0 && index < tasks.size()) {
-            tasks.remove(index); //removing the task at the given index
-            System.out.println("task reomved successfully");
+        if(index >= 0 && index < tasks.get(category).size()) {
+            tasks.get(category).remove(index); //removing the task at the given index
+            System.out.println("task removed successfully");
+
+            //reomve category if its empty after removal
+            if(tasks.get(category).isEmpty()){
+                tasks.remove(category);
+            }
         } else {
             System.out.println("invalid task number");
         }
@@ -89,13 +113,16 @@ public class ToDoList {
     public static void viewTask(){
         if(tasks.isEmpty()){ //checking if the task list is empty
             System.out.println("task list is empty");
-        } else {
-            System.out.println("\n your to do list:");
+            return;
+        } 
 
-            //looping through the tasks and displaying them with numbering
+        System.out.println("\n your to do list is: ");
+        for(String category : tasks.keySet()){ //loop through each category
+            System.out.println(" \n category " + category);
+            ArrayList<String> categoryTasks = tasks.get(category);
 
-            for(int i=0; i <= tasks.size(); i++) {
-                System.out.println((i+1) + ". " + tasks.get(i));
+            for(int i=0; i < categoryTasks.size(); i++){
+                System.out.println((i+1) + ". " + categoryTasks.get(i) );
             }
         }
     }
